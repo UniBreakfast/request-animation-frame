@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #fafafa;
+  height: 100vh;
+}
+
+#canv {
+  border: 1px solid #bfbfbf;
+  background: #fff;
+  border-radius: 3px;
+}
