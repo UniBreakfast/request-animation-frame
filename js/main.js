@@ -1,3 +1,5 @@
+canv.width = innerWidth - 20
+canv.height = innerHeight - 20
 const ctx = canv.getContext("2d")
 
 const rndNum = rnd(1, 95)
@@ -46,14 +48,14 @@ function drawTriangle(x, y, size, angle=0) {
 
 function drawAll(timestamp) {
   const time = timestamp - params.lastTime
-  
+
   ctx.fillStyle = `rgba(255, 255, 255, .3)`
   ctx.fillRect(0, 0, canv.width, canv.height)
   params.objects.sort((a, b) => a.size - b.size)
-  
+
   params.objects.forEach(object => {
     const distance = time * object.speed
-    
+
     ctx.fillStyle = object.color
     drawTriangle(object.x, object.y, object.size, object.angle)
 
