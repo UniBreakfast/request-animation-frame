@@ -1,38 +1,31 @@
-canv.width = innerWidth - 20
-canv.height = innerHeight - 20
 const ctx = canv.getContext("2d")
 
-const rndNum = rnd(1, 95)
-
 const params = {
-  color: "#efefef",
   size: 80,
   lastTime: null,
   speed: 20 / 1000, // px/ms
-  objects: [
-    makeTriangle(40, 40)
-  ]
+  objects: [ makeTriangle(40, 40) ]
 }
+
+canv.width = innerWidth - 20
+canv.height = innerHeight - 20
+
+canv.onclick = draw
+canv.onmousedown = () => canv.onmousemove = draw
+canv.onmouseup = () => canv.onmousemove = null
+
+requestAnimationFrame(drawAll)
 
 function rnd(min, max) {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-function drawTriangle(x, y, size, angle=0) {
+function drawTriangle(x, y, size, angle = 0, color) {
   const r = Math.sqrt(size ** 2 - (size / 2) ** 2) / 3
-
-  /* const x1 = x - size / 2
-  const x2 = x + size / 2
-  const x3 = x
-
-  const y1 = y + r
-  const y2 = y1
-  const y3 = y - 2 * r */
 
   const x1 = 2 * r * Math.cos((150 + angle) / 360 * 2 * Math.PI) + x
   const x2 = 2 * r * Math.cos((30 + angle) / 360 * 2 * Math.PI) + x
   const x3 = 2 * r * Math.cos((270 + angle) / 360 * 2 * Math.PI) + x
-
   const y1 = 2 * r * Math.sin((150 + angle) / 360 * 2 * Math.PI) + y
   const y2 = 2 * r * Math.sin((30 + angle) / 360 * 2 * Math.PI) + y
   const y3 = 2 * r * Math.sin((270 + angle) / 360 * 2 * Math.PI) + y
@@ -43,6 +36,7 @@ function drawTriangle(x, y, size, angle=0) {
   ctx.lineTo(x3, y3)
   ctx.closePath()
 
+  ctx.fillStyle = color
   ctx.fill()
 }
 
@@ -52,20 +46,7 @@ function drawAll(timestamp) {
   ctx.fillStyle = `rgba(255, 255, 255, .3)`
   ctx.fillRect(0, 0, canv.width, canv.height)
   params.objects.sort((a, b) => a.size - b.size)
-
-  params.objects.forEach(object => {
-    const distance = time * object.speed
-
-    ctx.fillStyle = object.color
-    drawTriangle(object.x, object.y, object.size, object.angle)
-
-    object.timeLeft--
-    object.x += distance
-    object.angle += distance
-    object.y += object.fall / 200
-
-    if (!object.timeLeft) params.objects.splice(params.objects.indexOf(object), 1)
-  })
+  params.objects.forEach(makeObjectHandler(time))
 
   requestAnimationFrame(drawAll)
   params.lastTime = timestamp
@@ -78,21 +59,31 @@ function draw(e) {
 
 function makeTriangle(x, y) {
   const rndNum = rnd(1, 90)
-
   return {
     x,
     y,
-    timeLeft: 2000,
+    timeLeft: 15e4,
     speed: rndNum / 1000,
-    size: rndNum,
-    color: `hsl(${new Date().getSeconds() * 12} 65% ${rndNum}%)`,
+    size: rndNum * 1,
+    color: `hsl(${new Date().getSeconds() * 12} 85% ${rndNum}%)`,
     angle: 0,
-    fall: rnd(-100, 100)
+    fall: rnd(-130, 130)
   }
 }
 
-canv.onclick = draw
-canv.onmousedown = () => canv.onmousemove = draw
-canv.onmouseup = () => canv.onmousemove = null
+function makeObjectHandler(time) {
+  return object => {
+    const distance = time * object.speed
+    const { x, y, size, angle, color } = object
 
-requestAnimationFrame(drawAll)
+    drawTriangle(x, y, size, angle, color)
+    object.timeLeft -= time
+    object.x += distance
+    object.angle += distance
+    object.y += object.fall / 200
+
+    if (object.timeLeft < 0) {
+      params.objects.splice(params.objects.indexOf(object), 1)
+    }
+  }
+}
